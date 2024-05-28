@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,4 +5,86 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model aime {
+  id             Int          @id @default(autoincrement())
+  utilisateur_id Int?
+  post_id        Int?
+  date_creation  DateTime?    @default(now()) @db.Timestamp(0)
+  utilisateur    utilisateur? @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "aime_ibfk_1")
+  post           post?        @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "aime_ibfk_2")
+
+  @@index([post_id], map: "post_id")
+  @@index([utilisateur_id], map: "utilisateur_id")
+}
+
+model commentaire {
+  id             Int          @id @default(autoincrement())
+  utilisateur_id Int?
+  post_id        Int?
+  message        String?      @db.Text
+  date_creation  DateTime?    @default(now()) @db.Timestamp(0)
+  utilisateur    utilisateur? @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "commentaire_ibfk_1")
+  post           post?        @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "commentaire_ibfk_2")
+
+  @@index([post_id], map: "post_id")
+  @@index([utilisateur_id], map: "utilisateur_id")
+}
+
+model follower {
+  id                                             Int          @id @default(autoincrement())
+  following_id                                   Int?
+  follower_id                                    Int?
+  date_creation                                  DateTime?    @default(now()) @db.Timestamp(0)
+  utilisateur_follower_following_idToutilisateur utilisateur? @relation("follower_following_idToutilisateur", fields: [following_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "follower_ibfk_1")
+  utilisateur_follower_follower_idToutilisateur  utilisateur? @relation("follower_follower_idToutilisateur", fields: [follower_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "follower_ibfk_2")
+
+  @@index([follower_id], map: "follower_id")
+  @@index([following_id], map: "following_id")
+}
+
+model post {
+  id                Int           @id @default(autoincrement())
+  utilisateur_id    Int?
+  caption           String?       @db.Text
+  image_url         String?       @db.VarChar(255)
+  date_creation     DateTime?     @default(now()) @db.Timestamp(0)
+  date_modification DateTime?     @default(now()) @db.Timestamp(0)
+  aime              aime[]
+  commentaire       commentaire[]
+  utilisateur       utilisateur?  @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_ibfk_1")
+
+  @@index([utilisateur_id], map: "utilisateur_id")
+}
+
+model profile {
+  id                Int           @id @default(autoincrement())
+  id_utilisateur    Int?
+  sexe              String?       @db.VarChar(255)
+  pays              String?       @db.VarChar(255)
+  ville             String?       @db.VarChar(255)
+  date_creation     DateTime?     @default(now()) @db.Timestamp(0)
+  date_modification DateTime?     @default(now()) @db.Timestamp(0)
+  utilisateur       utilisateur[]
+}
+
+model utilisateur {
+  id                                          Int           @id @default(autoincrement())
+  id_profile                                  Int?
+  firstname                                   String?       @db.VarChar(255)
+  lastname                                    String?       @db.VarChar(255)
+  email                                       String?       @unique(map: "email") @db.VarChar(255)
+  password                                    String?       @db.VarChar(255)
+  isAdmin                                     Boolean?
+  date_creation                               DateTime?     @default(now()) @db.Timestamp(0)
+  date_modification                           DateTime?     @default(now()) @db.Timestamp(0)
+  aime                                        aime[]
+  commentaire                                 commentaire[]
+  follower_follower_following_idToutilisateur follower[]    @relation("follower_following_idToutilisateur")
+  follower_follower_follower_idToutilisateur  follower[]    @relation("follower_follower_idToutilisateur")
+  post                                        post[]
+  profile                                     profile?      @relation(fields: [id_profile], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "utilisateur_ibfk_1")
+
+  @@index([id_profile], map: "id_profile")
 }
