@@ -7,7 +7,7 @@ const PORT = 5000;
 
 app.use(express.json());
 
-app.get("/", async (req, res) => {
+app.get("/",  async (req, res) => {
   return res.send("hello world");
 });
 
