@@ -18,11 +18,9 @@ const register = async (req, res, next) => {
 
     // Check if all the data are filled
     if (!firstname || !lastname || !email || !password) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({
-          error: new BadRequestError("Please fill all the data").message,
-        });
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: new BadRequestError("Please fill all the data").message,
+      });
     }
 
     // Check if the user already exists
