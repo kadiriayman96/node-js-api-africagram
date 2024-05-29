@@ -11,7 +11,9 @@ const createPost = async (req, res) => {
     const userId = req.user.id;
 
     if (!caption || !req.file) {
-      throw new BadRequestError("Caption and image are required !!");
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: new BadRequestError("Please fill all the data !").message,
+      });
     }
 
     const image_url = req.file.path;
@@ -25,7 +27,9 @@ const createPost = async (req, res) => {
 
     return res.status(StatusCodes.CREATED).json(post);
   } catch (error) {
-    return res.status(error.statusCode).json({ error: error.message });
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: error.message });
   }
 };
 
@@ -46,12 +50,16 @@ const getAllPosts = async (req, res) => {
     });
 
     if (posts.length === 0) {
-      throw new NotFoundError("No posts found !!");
+      return res.status(StatusCodes.NOT_FOUND).json({
+        error: new NotFoundError("No posts found !!").message,
+      });
     }
 
     return res.status(StatusCodes.OK).json(posts);
   } catch (error) {
-    return res.status(error.statusCode).json({ error: error.message });
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: error.message });
   }
 };
 
