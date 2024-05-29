@@ -2,16 +2,10 @@ import StatusCodes from "http-status-codes";
 
 class BadRequestError extends Error {
   constructor(message) {
-    super(message)
-    this.name = "Bad Request Personalisée";
+    super(message);
+    this.name = "BadRequestError";
     this.message = message || "Message => Bad Request Personalisée";
-    
-    this.statusCode = StatusCodes.BadRequestError;
+    this.statusCode = StatusCodes.BAD_REQUEST;
   }
 }
-
-function BadRequestMessage(message) {
-  throw new BadRequestError(message);
-}
-
-export default BadRequestMessage;
+export default BadRequestError;

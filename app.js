@@ -1,20 +1,19 @@
-import { PrismaClient } from "@prisma/client";
 import express from "express";
-import routerAuth from "./routes/AuthRoutes.js"
+import routerAuth from "./routes/AuthRoutes.js";
+import routerPost from "./routes/PostRoutes.js";
 
 const app = express();
-const prisma = new PrismaClient();
 const PORT = 5000;
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use("/api", routerAuth)
+app.use("/api", routerAuth);
+app.use("/api", routerPost);
 
-
-// app.get("/",  async (req, res) => {
-//   return res.send("hello world");
-// });
-
-
+// Error 404
+app.use((req, res, next) => {
+  res.send({ error: "Error 404 Not Found" });
+});
 
 app.listen(PORT, () => console.log(`server is running on port ${PORT} ....`));

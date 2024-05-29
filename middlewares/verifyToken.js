@@ -1,24 +1,23 @@
 import jwt from "jsonwebtoken";
-import { UnAuthenticatedMessage } from "../errors";
+import { UnAuthenticatedError } from "../errors/index.js";
 
 function verifyToken(req, res, next) {
   try {
     const { authorization } = req.headers;
     if (!authorization) {
-      UnAuthenticatedMessage("Unauthorized");
+      throw new UnAuthenticatedError("No token provided");
     }
     const token = authorization.split(" ")[1];
     if (!token) {
-      UnAuthenticatedMessage("Invalid Token");
+      throw new UnAuthenticatedError("No token provided");
     }
 
     const payload = jwt.verify(token, "user_key");
-    req.user = payload;
-
+    req.user = payload.user;
     next();
   } catch (error) {
     console.log(error);
-    return res.status(error.statusCode).send(error.name);
+    return res.status(error.statusCode).json({ error: error.message });
   }
 }
 

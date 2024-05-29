@@ -1,100 +1,109 @@
-// login register(create user) logout ..
-import {PrismaClient}  from "@prisma/client"
-import {BadRequestMessage, UnAuthenticatedMessage, NotFoundMessage} from "../errors/index.js"
-import hashPassword from "../utils/hashPassword.js"
-import generateToken from "../utils/jwt.js"
-import comparePasswords from "../utils/comparePasswords.js"
-import  sign from "jsonwebtoken"
+import { PrismaClient } from "@prisma/client";
+import {
+  BadRequestError,
+  UnAuthenticatedError,
+  NotFoundError,
+} from "../errors/index.js";
+import hashPassword from "../utils/hashPassword.js";
+import generateToken from "../utils/jwt.js";
+import comparePasswords from "../utils/comparePasswords.js";
+import { StatusCodes } from "http-status-codes";
 
-const prisma  = new PrismaClient()
+const prisma = new PrismaClient();
 
 // User Register
-const register = async(req, res) => {
-    try {
-        const {firstname, lastname, email, password} = req.body
+const register = async (req, res, next) => {
+  try {
+    const { firstname, lastname, email, password } = req.body;
 
-        // check if all the data are filled
-        if (!firstname || !lastname || !email || !password) {
-            return res.status(500).send(BadRequestMessage("fill all the data"));
-        }
-
-        // check if the utilsateur deja exist
-        const existingUser = await prisma.utilisateur.findFirst({
-            where: {
-                email: email
-            }
-        })
-        if(existingUser) {
-            //return res.send(BadRequestMessage("utilisateure deja exist"))
-            return res.send("deja exist")
-        }
-
-        // Hash Password
-        const hpass = await hashPassword(password)
-        console.log(hpass)
-
-        // Sauvgarder l'utilisateur dans la db
-        const register = await prisma.utilisateur.create({
-            data : {
-                firstname,
-                lastname,
-                email,
-                password: hpass
-            }
-        })
-
-        //Generer Token
-
-        const token = await generateToken({email: email}, "Acharf")
-        console.log(token)
-
-        //Envoyer la repense et le token
-
-            res.send(token)
-       
-
-    } catch (error) {
-        console.log(error.name)
+    // Check if all the data are filled
+    if (!firstname || !lastname || !email || !password) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({
+          error: new BadRequestError("Please fill all the data").message,
+        });
     }
-}
+
+    // Check if the user already exists
+    const existingUser = await prisma.utilisateur.findUnique({
+      where: {
+        email,
+      },
+    });
+    if (existingUser) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: new BadRequestError("User already exists").message });
+    }
+
+    // Hash Password
+    const hashedPassword = await hashPassword(password);
+
+    // Save the user in the database
+    const newUser = await prisma.utilisateur.create({
+      data: {
+        firstname,
+        lastname,
+        email,
+        password: hashedPassword,
+        isAdmin: false,
+      },
+    });
+
+    // Generate Token
+    const token = generateToken({ user: newUser }, "user_key");
+
+    // Send response and token
+    return res.status(StatusCodes.CREATED).json({ token });
+  } catch (error) {
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: error.message });
+  }
+};
 
 // User Login
+const loginUser = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
 
-const loginUser = async (req, res) => {
-    try {
-        const {email, password} = req.body
-
-        // validate email & password
-        if (!email || !password) {
-            return res.status(500).send(BadRequestMessage("fill all the data"));
-        }
-
-        // Trouver l'utilisateure
-        const userData = await prisma.utilisateur.findUnique({
-            where: {
-                email: email
-            },select:{
-                email:true,
-                password:true
-            }
-        })
-
-        if(!userData) {
-            return res.status(500).send(BadRequestMessage("user not exist"));
-        }
-
-        // Compare les passwords
-        const isMatch = await comparePasswords(password, userData.password)
-        if(isMatch === true){
-            //Generate Token
-            const token = await generateToken({email: email}, "Acharf")
-            return res.send(token)
-        } else {
-            return res.status(500).send(BadRequestMessage("user not exist"));        }
-
-    } catch (error) {
-        console.log(error)
+    // Validate email & password
+    if (!email || !password) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: new BadRequestError("Please fill all the data").message,
+      });
     }
-}
 
-export {register, loginUser}
+    // Find the user
+    const user = await prisma.utilisateur.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ error: new NotFoundError("User not found").message });
+    }
+
+    // Compare passwords
+    const isMatch = await comparePasswords(password, user.password);
+    if (!isMatch) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        error: new UnAuthenticatedError("Incorrect email or password").message,
+      });
+    }
+
+    // Generate Token
+    const token = generateToken({ user: user }, "user_key");
+    return res.status(StatusCodes.OK).json({ token });
+  } catch (error) {
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: error.message });
+  }
+};
+
+export { register, loginUser };

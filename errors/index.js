@@ -1,6 +1,5 @@
-import BadRequestMessage from "./bad-request.js";
-import UnAuthenticatedMessage from "./unauthenticated.js";
-import NotFoundMessage from "./not-found.js";
+import UnAuthenticatedError from "./unauthenticated.js";
+import NotFoundError from "./not-found.js";
+import BadRequestError from "./bad-request.js";
 
-
-export { BadRequestMessage, UnAuthenticatedMessage, NotFoundMessage };
+export { UnAuthenticatedError, NotFoundError, BadRequestError };
