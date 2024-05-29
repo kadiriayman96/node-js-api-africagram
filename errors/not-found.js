@@ -1,15 +1,12 @@
 import StatusCodes from "http-status-codes";
 
-class NotFound extends Error {
+class NotFoundError extends Error {
   constructor(message) {
-    this.name = "Not Found Personalisée";
+    super(message);
+    this.name = "NotFoundError";
     this.message = message || "Message => Not Found Personalisée";
     this.statusCode = StatusCodes.NOT_FOUND;
   }
 }
 
-function NotFoundMessage(message) {
-  throw new NotFound(message);
-}
-
-export default NotFoundMessage;
+export default NotFoundError;
