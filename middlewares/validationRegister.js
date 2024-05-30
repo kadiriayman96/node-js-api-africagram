@@ -1,5 +1,4 @@
 import Joi from "joi";
-//import { UnAuthenticatedError } from "../errors/index.js";
 
 const validateRegister = async (req, res, next) => {
   const registerSchema = Joi.object({
