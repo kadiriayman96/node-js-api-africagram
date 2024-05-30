@@ -2,7 +2,7 @@ import express from "express";
 import routerAuth from "./routes/AuthRoutes.js";
 import routerPost from "./routes/PostRoutes.js";
 import routerStatistics from "./routes/StatisticsRoutes.js";
-
+import routerProfile from "./routes/ProfileRoutes.js";
 
 const app = express();
 const PORT = 5000;
@@ -13,10 +13,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api", routerAuth);
 app.use("/api", routerPost);
 app.use("/api", routerStatistics);
-
+app.use("/api", routerProfile);
 
 // Error 404
-app.use((req, res, next) => {
+app.use((req, res) => {
   res.send({ error: "Error 404 Not Found" });
 });
 
