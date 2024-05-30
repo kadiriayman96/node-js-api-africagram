@@ -108,17 +108,4 @@ const loginUser = async (req, res, next) => {
 
 
 
-// get users
-
-const getUsers = async (req, res) => {
-  const users = await prisma.utilisateur.findMany()
-  res.send(users)
-}
-// delete
-
-const deleteUsers = async (req, res) => {
-  const users = await prisma.utilisateur.deleteMany()
-  res.send(users)
-}
-
-export { register, loginUser, getUsers, deleteUsers };
+export { register, loginUser};

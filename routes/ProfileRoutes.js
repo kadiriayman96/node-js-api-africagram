@@ -5,6 +5,6 @@ import verifyToken from "../middlewares/verifyToken.js";
 const routerProfile = express.Router();
 
 routerProfile.post("/createprofile",verifyToken, profileCreate)
-             .post("/profile", verifyToken, getProfile)
+             .get("/profile", verifyToken, getProfile)
 
 export default routerProfile;
