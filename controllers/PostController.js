@@ -27,9 +27,7 @@ const createPost = async (req, res) => {
 
     return res.status(StatusCodes.CREATED).json(post);
   } catch (error) {
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: error.message });
+    return res.status(error.statusCode).json({ error: error.message });
   }
 };
 
@@ -57,9 +55,7 @@ const getAllPosts = async (req, res) => {
 
     return res.status(StatusCodes.OK).json(posts);
   } catch (error) {
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: error.message });
+    return res.status(error.statusCode).json({ error: error.message });
   }
 };
 

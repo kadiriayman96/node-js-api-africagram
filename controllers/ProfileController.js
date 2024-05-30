@@ -11,7 +11,20 @@ const profileCreate = async (req, res) => {
     const { sexe, pays, ville } = req.body;
     const userId = req.user.id;
     if (!sexe || !pays || !ville) {
-      throw new BadRequestError("fill all required data");
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: new BadRequestError("Please fill all the data!").message,
+      });
+    }
+
+    const existingProfile = await prisma.profile.findFirst({
+      where: {
+        id_utilisateur: userId,
+      },
+    });
+    if (existingProfile) {
+      return res.status(StatusCodes.CONFLICT).json({
+        error: new BadRequestError("Profile already exists!").message,
+      });
     }
 
     const profile = await prisma.profile.create({
@@ -25,7 +38,7 @@ const profileCreate = async (req, res) => {
 
     return res.status(StatusCodes.OK).json(profile);
   } catch (error) {
-    return res.status(error.statusCode).json({ error: error.message });
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
   }
 };
 
@@ -39,12 +52,14 @@ const getProfile = async (req, res) => {
     });
 
     if (!profile) {
-      throw new NotFoundError("Profile Not Found!!");
+      return res.status(StatusCodes.NOT_FOUND).json({
+        error: new NotFoundError("Profile Not Found!!").message,
+      });
     }
 
     return res.status(StatusCodes.OK).json(profile);
   } catch (error) {
-    return res.json({ error: error.message });
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
   }
 };
 

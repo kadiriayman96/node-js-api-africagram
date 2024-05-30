@@ -12,11 +12,11 @@ model aime {
   utilisateur_id Int?
   post_id        Int?
   date_creation  DateTime?    @default(now()) @db.Timestamp(0)
-  utilisateur    utilisateur? @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "aime_ibfk_1")
-  post           post?        @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "aime_ibfk_2")
+  utilisateur    utilisateur? @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  post           post?        @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([post_id], map: "post_id")
-  @@index([utilisateur_id], map: "utilisateur_id")
+  @@index([post_id])
+  @@index([utilisateur_id])
 }
 
 model commentaire {
@@ -25,23 +25,23 @@ model commentaire {
   post_id        Int?
   message        String?      @db.Text
   date_creation  DateTime?    @default(now()) @db.Timestamp(0)
-  utilisateur    utilisateur? @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "commentaire_ibfk_1")
-  post           post?        @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "commentaire_ibfk_2")
+  utilisateur    utilisateur? @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  post           post?        @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([post_id], map: "post_id")
-  @@index([utilisateur_id], map: "utilisateur_id")
+  @@index([post_id])
+  @@index([utilisateur_id])
 }
 
 model follower {
-  id                                             Int          @id @default(autoincrement())
-  following_id                                   Int?
-  follower_id                                    Int?
-  date_creation                                  DateTime?    @default(now()) @db.Timestamp(0)
-  utilisateur_follower_following_idToutilisateur utilisateur? @relation("follower_following_idToutilisateur", fields: [following_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "follower_ibfk_1")
-  utilisateur_follower_follower_idToutilisateur  utilisateur? @relation("follower_follower_idToutilisateur", fields: [follower_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "follower_ibfk_2")
+  id            Int          @id @default(autoincrement())
+  following_id  Int?
+  follower_id   Int?
+  date_creation DateTime?    @default(now()) @db.Timestamp(0)
+  following     utilisateur? @relation("follower_following", fields: [following_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  follower      utilisateur? @relation("follower_follower", fields: [follower_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([follower_id], map: "follower_id")
-  @@index([following_id], map: "following_id")
+  @@index([follower_id])
+  @@index([following_id])
 }
 
 model post {
@@ -53,38 +53,35 @@ model post {
   date_modification DateTime?     @default(now()) @db.Timestamp(0)
   aime              aime[]
   commentaire       commentaire[]
-  utilisateur       utilisateur?  @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "post_ibfk_1")
+  utilisateur       utilisateur?  @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([utilisateur_id], map: "utilisateur_id")
-}
-
-model profile {
-  id                Int           @id @default(autoincrement())
-  id_utilisateur    Int?
-  sexe              String?       @db.VarChar(255)
-  pays              String?       @db.VarChar(255)
-  ville             String?       @db.VarChar(255)
-  date_creation     DateTime?     @default(now()) @db.Timestamp(0)
-  date_modification DateTime?     @default(now()) @db.Timestamp(0)
-  utilisateur       utilisateur[]
+  @@index([utilisateur_id])
 }
 
 model utilisateur {
-  id                                          Int           @id @default(autoincrement())
-  id_profile                                  Int?
-  firstname                                   String?       @db.VarChar(255)
-  lastname                                    String?       @db.VarChar(255)
-  email                                       String?       @unique(map: "email") @db.VarChar(255)
-  password                                    String?       @db.VarChar(255)
-  isAdmin                                     Boolean?
-  date_creation                               DateTime?     @default(now()) @db.Timestamp(0)
-  date_modification                           DateTime?     @default(now()) @db.Timestamp(0)
-  aime                                        aime[]
-  commentaire                                 commentaire[]
-  follower_follower_following_idToutilisateur follower[]    @relation("follower_following_idToutilisateur")
-  follower_follower_follower_idToutilisateur  follower[]    @relation("follower_follower_idToutilisateur")
-  post                                        post[]
-  profile                                     profile?      @relation(fields: [id_profile], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "utilisateur_ibfk_1")
+  id                 Int           @id @default(autoincrement())
+  firstname          String?       @db.VarChar(255)
+  lastname           String?       @db.VarChar(255)
+  email              String?       @unique @db.VarChar(255)
+  password           String?       @db.VarChar(255)
+  isAdmin            Boolean?
+  date_creation      DateTime?     @default(now()) @db.Timestamp(0)
+  date_modification  DateTime?     @default(now()) @db.Timestamp(0)
+  aime               aime[]
+  commentaire        commentaire[]
+  follower_following follower[]    @relation("follower_following")
+  follower_follower  follower[]    @relation("follower_follower")
+  post               post[]
+  profile            profile?
+}
 
-  @@index([id_profile], map: "id_profile")
+model profile {
+  id                Int         @id @default(autoincrement())
+  sexe              String?     @db.VarChar(255)
+  pays              String?     @db.VarChar(255)
+  ville             String?     @db.VarChar(255)
+  date_creation     DateTime?   @default(now()) @db.Timestamp(0)
+  date_modification DateTime?   @default(now()) @db.Timestamp(0)
+  id_utilisateur    Int         @unique
+  utilisateur       utilisateur @relation(fields: [id_utilisateur], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
