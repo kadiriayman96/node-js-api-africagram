@@ -3,6 +3,7 @@ import routerAuth from "./routes/AuthRoutes.js";
 import routerPost from "./routes/PostRoutes.js";
 import routerStatistics from "./routes/StatisticsRoutes.js";
 
+
 const app = express();
 const PORT = 5000;
 
@@ -12,6 +13,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api", routerAuth);
 app.use("/api", routerPost);
 app.use("/api", routerStatistics);
+
 
 // Error 404
 app.use((req, res, next) => {
