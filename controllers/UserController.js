@@ -62,17 +62,47 @@ const deleteUser = async (req, res, next) => {
         error: new NotFoundError("User not found!").message,
       });
     }
-    const userDeleted = await prisma.utilisateur.delete({
+
+    const existProfile = await prisma.profile.findUnique({
       where: {
-        id: req.user.id,
-      },
-      include: {
-        profile: true,
-        posts: true,
+        id_utilisateur: req.user.id,
       },
     });
 
-    return res.status(StatusCodes.NO_CONTENT).json(existUser);
+    const existPosts = await prisma.post.findMany({
+      where: {
+        utilisateur_id: req.user.id,
+      },
+    });
+    if (!existProfile || !existPosts) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        error: "Cant find Profile or Post to delete. Please try again later.",
+      });
+    }
+
+    let deleteProfile = prisma.profile.delete({
+      where: {
+        id_utilisateur: req.user.id,
+      },
+    });
+    console.log(deleteProfile);
+    let deletePosts = prisma.post.deleteMany({
+      where: {
+        utilisateur_id: req.user.id,
+      },
+    });
+    const userDeleted = prisma.utilisateur.delete({
+      where: {
+        id: req.user.id,
+      },
+    });
+    const deleteDone = await prisma.$transaction([
+      deletePosts,
+      deleteProfile,
+      userDeleted,
+    ]);
+
+    return res.status(StatusCodes.NO_CONTENT).json("Delete Done");
   } catch (error) {
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
